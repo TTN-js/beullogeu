@@ -1,6 +1,3 @@
-@import "../bower_components/normalize-scss/_normalize.scss";
-@import "../bower_components/typeplate-starter-kit/scss/_typeplate.scss";
-
 p+p {
     text-indent: 0;
     margin-top: 0;
@@ -127,3 +124,66 @@ body {
 /**
  * App code
  */
+
+body{
+    background-color:#80DBD4;
+}
+
+form {
+
+    width:100%; margin-top:17px;
+
+    .signinas{display: inline-block; float:left; color:white; margin-bottom:0px;}
+
+    .signup{padding: 10px; display: inline-block; float:right; color:white;
+}
+    .signin{padding: 10px; background: #65C6BB}
+}
+
+#email{margin-bottom: 0px; margin-top:17px; margin-right:7px}
+#password{margin-bottom: 0px; margin-top:17px; margin-right:7px}
+#username{margin-bottom: 0px; margin-top:7px; margin-right:7px}
+.button-primary{margin-bottom: 0px; margin-top:7px; margin-right: 7px}
+
+.ReadRamble{
+    border: 5px solid #33C3F0;
+    height:600px;
+}
+
+#RNRButton{
+    width:303px;
+}
+
+#logoutButton{
+    margin-left: 15px;
+    margin-top:0px;
+}
+
+/* 
+#secrets-view{
+    h1 {
+        color: rgba(192, 57, 43, 1.0);
+        border-bottom: 1px solid rgba(150, 40, 27, 1.0);
+    }
+    ul {
+        li {
+            list-style-type: none;
+            margin: 30px;
+        }
+
+        .usr {
+            background: #D35400;
+            color: #fff;
+            padding: 10px;
+            font-size: 21px;
+            margin: 10px;
+        }
+
+        .usr-secret{
+            color: rgba(192, 57, 43, 1.0);
+            opacity: .7;
+            font-style: italic;
+
+        }
+    }
+} */

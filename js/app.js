@@ -36,10 +36,185 @@ import fetch from "isomorphic-fetch"
 import DOM from 'react-dom'
 import React, {Component} from 'react'
 
+import $ from "jquery"
+import _ from "underscore"
+import Firebase from "firebase"
+import Backbonefire from "bbfire"
+
+
 function app() {
-    // start app
-    // new Router()
-    DOM.render(<p>test 2</p>, document.querySelector('.container'))
+
+// models
+
+var rootFbURL = "https://readandramble.firebaseio.com/"
+var fbRef = new Firebase(rootFbURL)
+
+var UserRambleCollection = Backbonefire.Firebase.Collection.extend({
+	url:"",
+	initialize: function(){
+		this.url = rootFbURL + "userRamble/"
+	}
+})
+
+// components
+var ReadRamble = React.createClass({
+	render:function(){
+		return(
+			<div className="ReadRamble">
+
+			</div>
+			)
+	}
+})
+
+// views
+var LogInView = React.createClass({
+	render: function(){
+		return(
+			<div>
+
+				<form onSubmit={this._handleLogIn}>
+				<input type="text" id="email" placeholder="Email"/>
+				<input type="password" id="password" placeholder="Password"/>
+				<h3 className="signup">read&ramble</h3><br/>
+				<input className="button-primary" type="submit" defaultValue="Log In"/>
+				<input className="button-primary" type="submit" defaultValue="Sign Up" onClick={this._SignUp}/><br/>
+				</form>
+
+				<ReadRamble/>
+			</div>
+		)
+	},
+
+	_SignUp: function(){
+		myAppRouter.navigate("authenticate", {trigger:true})
+	},
+
+		_handleLogIn:function(e){
+		e.preventDefault();
+
+		var emailInput = e.currentTarget.email.value
+		var pwInput =e.currentTarget.password.value
+		var authDataObj ={
+			email:emailInput,
+			password:pwInput
+		}
+
+			fbRef.authWithPassword(authDataObj, function(err, authData){
+				if(err){
+					alert("sorry credentials not vallid!!")
+				}else{
+					console.log("user is good to go!")
+					myAppRouter.navigate("read",{trigger:true})
+				}
+			})
+	}
+
+})
+
+var AuthView = React.createClass({
+
+	_handleSignUp: function(e){
+		var emailInput = e.currentTarget.email.value
+		var pwInput = e.currentTarget.password.value
+		var usernameInput = e.currentTarget.username.value
+
+		console.log(emailInput, pwInput, usernameInput)
+
+		var newUser = {
+			email: emailInput,
+			password: pwInput
+		}
+
+		fbRef.createUser(newUser, function(err, authData){
+			var UserRambleColl = new UserRambleCollection()
+			UserRambleColl.create({
+				username: usernameInput,
+				uid: authData.uid
+			})
+		})
+	},
+
+	render:function(){
+		return(
+			<div>
+
+				<form onSubmit={this._handleSignUp}>
+				<input type="text" id="email" placeholder="Email"/>
+				<input type="password" id="password" placeholder="Password"/>
+				<h3 className="signup">read&ramble</h3><br/>
+				<input type="text" id="username" placeholder="Username"/><br/>
+				<input id="RNRButton" className="button-primary" type="submit" defaultValue="read&ramble"/><br/>
+				</form>
+
+				<ReadRamble/>
+			</div>
+		)
+	}
+})
+
+var ReadView = React.createClass({
+	render:function(){
+		return(
+			<div>
+				<form onSubmit={this._handleSignUp}>
+				<h3 className="signinas">username</h3>
+				<h3 className="signup">read&ramble</h3><br/><br/>
+
+				<input id="logoutButton" className="button-primary" type="submit" defaultValue="Log Out" onClick={this._LogOut}/>
+				</form>	
+
+				<ReadRamble/>	
+			</div>	
+			)
+	},
+
+	_LogOut: function(){
+		myAppRouter.navigate("login", {trigger:true})
+	}
+})
+
+
+// router
+var AppRouter = Backbonefire.Router.extend({
+	routes: {
+		"login": "showLogIn",
+		"authenticate": "showAuth",
+		"read": "showRead",
+		"ramble": "showRamble",
+		// "faves" : "showFaves"
+		"*default": "showLogIn"
+	},
+
+	showLogIn:function(){
+		DOM.render(<LogInView/>, document.querySelector(".container"))
+	},
+
+	showAuth: function(){
+		DOM.render(<AuthView/>, document.querySelector(".container"))
+	},
+
+	showRead: function(){
+		DOM.render(<ReadView/>, document.querySelector(".container"))
+	},
+
+	showRamble: function(){
+		DOM.render(<RambleView/>, document.querySelector(".container"))
+	},
+
+	// showFaves: function(){
+	// 	DOM.render(<FavesView/>, document.querySelector(".container"))
+	// },
+
+	initialize: function(){
+		console.log("app is routting...")
+		Backbonefire.history.start()
+	}
+
+})
+
+var myAppRouter = new AppRouter()
+
 }
 
 app()
