@@ -52,25 +52,18 @@ var fbRef = new Firebase(rootFbURL)
 var UserRambleCollection = Backbonefire.Firebase.Collection.extend({
 	url:"",
 	initialize: function(){
-		this.url = rootFbURL + "userRamble/"
+		this.url = rootFbURL + "user/"
+		
 	}
 })
 
-// components
-var ReadRamble = React.createClass({
-	render:function(){
-		return(
-			<div className="ReadRamble">
-
-			</div>
-			)
-	}
-})
+// https://readandramble.firebaseio.com/user/98u34t9u8j349398/posts/
 
 // views
 var LogInView = React.createClass({
 	render: function(){
 		return(
+
 			<div>
 
 				<form onSubmit={this._handleLogIn}>
@@ -81,7 +74,12 @@ var LogInView = React.createClass({
 				<input className="button-primary" type="submit" defaultValue="Sign Up" onClick={this._SignUp}/><br/>
 				</form>
 
-				<ReadRamble/>
+				<div className="ReadRamble">
+
+					<h3 className="wordHolder">log in to read&ramble...</h3><br/>
+
+				</div>
+
 			</div>
 		)
 	},
@@ -94,7 +92,7 @@ var LogInView = React.createClass({
 		e.preventDefault();
 
 		var emailInput = e.currentTarget.email.value
-		var pwInput =e.currentTarget.password.value
+		var pwInput = e.currentTarget.password.value
 		var authDataObj ={
 			email:emailInput,
 			password:pwInput
@@ -102,7 +100,7 @@ var LogInView = React.createClass({
 
 			fbRef.authWithPassword(authDataObj, function(err, authData){
 				if(err){
-					alert("sorry credentials not vallid!!")
+					alert("THE EMAIL ADDRESS OR PASSWORD YOU ENTERED IS NOT VALID")
 				}else{
 					console.log("user is good to go!")
 					myAppRouter.navigate("read",{trigger:true})
@@ -127,12 +125,20 @@ var AuthView = React.createClass({
 		}
 
 		fbRef.createUser(newUser, function(err, authData){
-			var UserRambleColl = new UserRambleCollection()
-			UserRambleColl.create({
-				username: usernameInput,
-				uid: authData.uid
+			if(authData){
+				var UserRambleColl = new UserRambleCollection()
+				UserRambleColl.create({
+					username: usernameInput,
+					uid: authData.uid
 			})
+			myAppRouter.navigate("read",{trigger:true})
+
+			}else{
+				alert("A USER HAS NOT BEEN CREATED")
+			}
+
 		})
+
 	},
 
 	render:function(){
@@ -147,7 +153,10 @@ var AuthView = React.createClass({
 				<input id="RNRButton" className="button-primary" type="submit" defaultValue="read&ramble"/><br/>
 				</form>
 
-				<ReadRamble/>
+				<div className="ReadRamble">
+					<h3 className="wordHolder">sign up to read&ramble...</h3><br/>
+				</div>
+
 			</div>
 		)
 	}
@@ -157,20 +166,118 @@ var ReadView = React.createClass({
 	render:function(){
 		return(
 			<div>
-				<form onSubmit={this._handleSignUp}>
-				<h3 className="signinas">username</h3>
+				<form>
+				<h3 className="signinas">{this.props.username}</h3>
 				<h3 className="signup">read&ramble</h3><br/><br/>
 
 				<input id="logoutButton" className="button-primary" type="submit" defaultValue="Log Out" onClick={this._LogOut}/>
 				</form>	
 
-				<ReadRamble/>	
+				<div className="ReadRamble">
+					<h3 className="wordHolder"></h3><br/>
+				</div>
+
+				<Tabs showing={this.props.showing}/>
+
 			</div>	
 			)
 	},
 
 	_LogOut: function(){
 		myAppRouter.navigate("login", {trigger:true})
+	}
+})
+
+var RambleView = React.createClass({
+	_cancelRamble: function(){
+		location.hash = "read"
+	},
+
+	_submitRamble: function(e){
+		var title = e.currentTarget.title.value
+		console.log('title: ....', title)
+		var writeRamble = e.currentTarget.writeRamble.value
+		console.log('writeRamble: ....', writeRamble)
+
+	var newRamble = {
+		title:title,
+		ramble:writeRamble
+	}
+
+	var rambleCollection = new UserRambleCollection()
+
+		rambleCollection.create({
+					title: newRamble.title,
+					ramble: newRamble.ramble
+					})
+
+	},
+
+	render:function(){
+		return(
+			<div>
+
+				<form>
+					<h3 className="signinas">{this.props.username}</h3>
+					<h3 className="signup">read&ramble</h3><br/><br/>
+
+					<input id="logoutButton" className="button-primary" type="submit" defaultValue="Log Out" onClick={this._LogOut}/>
+				</form>	
+
+				<div className="ReadRamble">
+					<form onSubmit={this._submitRamble} id = "rambleForm">
+						<input type="text" id="title" placeholder="Title"/>
+						<textarea type="text" id="writeRamble" placeholder="ramble..."/>
+						<div id="scBox">
+							<input className="button-primary" type="submit" defaultValue="Submit"/>
+							<input className="button-primary" type="submit" defaultValue="Cancel" onClick={this._cancelRamble}/><br/>
+						</div>
+					</form>
+				</div>
+
+				<Tabs showing={this.props.showing}/>
+
+			</div>
+			)
+	},
+
+	_LogOut: function(){
+		myAppRouter.navigate("login", {trigger:true})
+	}
+})
+
+// components
+var Tabs = React.createClass({
+
+	_genTab: function(tabType, i){
+		return<Tab key={i} type={tabType} showing={this.props.showing}/>
+	},
+
+	render: function(){
+		return(
+			<div className="tabs">
+				{["ramble","read"].map(this._genTab)}
+			</div>
+			)
+	}
+})
+
+var Tab = React.createClass({
+	_changeRoute: function(){
+		location.hash = this.props.type
+	},
+
+	render:function(){
+		var styleObj = {}
+		if (this.props.type === this.props.showing){
+			styleObj.borderBottom = "#80DBD4"
+		}
+
+		return (
+			<div onClick={this._changeRoute} style={styleObj} className="tab">
+				<p>{this.props.type}</p>
+			</div>	
+			)
 	}
 })
 
@@ -182,7 +289,6 @@ var AppRouter = Backbonefire.Router.extend({
 		"authenticate": "showAuth",
 		"read": "showRead",
 		"ramble": "showRamble",
-		// "faves" : "showFaves"
 		"*default": "showLogIn"
 	},
 
@@ -201,10 +307,6 @@ var AppRouter = Backbonefire.Router.extend({
 	showRamble: function(){
 		DOM.render(<RambleView/>, document.querySelector(".container"))
 	},
-
-	// showFaves: function(){
-	// 	DOM.render(<FavesView/>, document.querySelector(".container"))
-	// },
 
 	initialize: function(){
 		console.log("app is routting...")

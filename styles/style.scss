@@ -126,28 +126,62 @@ body {
  */
 
 body{
-    background-color:#80DBD4;
+    background-color: #80DBD4;
 }
 
 form {
 
-    width:100%; margin-top:17px;
+    width:100%; margin-top:17px; 
 
-    .signinas{display: inline-block; float:left; color:white; margin-bottom:0px;}
 
-    .signup{padding: 10px; display: inline-block; float:right; color:white;
+        .signinas{
+            display: inline-block; 
+            float: left; 
+            color: white; 
+            margin-bottom: 0px;
+         }
+
+        .signup{
+            padding: 10px; 
+            display: inline-block; 
+            float: right; 
+            color: white;
+        }
 }
-    .signin{padding: 10px; background: #65C6BB}
+
+#email{
+    margin-bottom: 0px; 
+    margin-top: 17px; 
+    margin-right: 7px;
 }
 
-#email{margin-bottom: 0px; margin-top:17px; margin-right:7px}
-#password{margin-bottom: 0px; margin-top:17px; margin-right:7px}
-#username{margin-bottom: 0px; margin-top:7px; margin-right:7px}
-.button-primary{margin-bottom: 0px; margin-top:7px; margin-right: 7px}
+#password{
+    margin-bottom: 0px; 
+    margin-top: 17px; 
+    margin-right: 7px;
+}
+
+#username{
+    margin-bottom: 0px; 
+    margin-top:7px; 
+    margin-right:7px;
+}
+
+.button-primary{
+    margin-bottom: 0px; 
+    margin-top: 7px; 
+    margin-right: 7px;
+}
 
 .ReadRamble{
     border: 5px solid #33C3F0;
     height:600px;
+    padding:7px;
+    padding-top:0px;
+    padding-top:2px;
+    overflow: scroll;
+    position:relative;
+
 }
 
 #RNRButton{
@@ -159,31 +193,109 @@ form {
     margin-top:0px;
 }
 
-/* 
-#secrets-view{
-    h1 {
-        color: rgba(192, 57, 43, 1.0);
-        border-bottom: 1px solid rgba(150, 40, 27, 1.0);
-    }
-    ul {
-        li {
-            list-style-type: none;
-            margin: 30px;
-        }
+.tabs {
+        position: absolute;
+        top: 11%;
+        left: -335px;
+        transform: translate(-50%, -100%);
+        margin: auto;
+        display: flex;
+        justify-content: space-between;
+        position: absolute;
 
-        .usr {
-            background: #D35400;
-            color: #fff;
-            padding: 10px;
-            font-size: 21px;
-            margin: 10px;
-        }
+        -moz-transform:rotate(-90deg);
+        ms-transform:rotate(-90deg);
+        -o-transform:rotate(-90deg);
+        -webkit-transform:rotate(-90deg);
+        transform-origin: bottom right;
 
-        .usr-secret{
-            color: rgba(192, 57, 43, 1.0);
-            opacity: .7;
-            font-style: italic;
 
-        }
-    }
-} */
+            .tab {
+                display: inline-block;
+                border: 5px solid #33C3F0;
+                flex: 1;
+                margin: 0 10px;
+                padding: 5px 10px;
+                text-align: center;
+                width: 150px;
+                background: #80DBD4;
+                cursor: pointer;
+                color:white;
+                font-size:18px;
+                height:50px;
+            }
+}
+
+.wordHolder{
+    color:white;
+}
+
+#writeRamble{
+    min-width:100%;
+    max-width:100%;
+    background-color:#80DBD4;
+    color:white;
+    font-size:18px;
+    max-height:478px;
+    min-height:478px;
+    border:none;
+    outline:2px solid #33C3F0;
+    margin-bottom:0px;
+}
+
+textarea::-webkit-input-placeholder {
+   color: white;
+}
+
+textarea:-moz-placeholder { /* Firefox 18- */
+   color: white;  
+}
+
+textarea::-moz-placeholder {  /* Firefox 19+ */
+   color: white;  
+}
+
+textarea:-ms-input-placeholder {  
+   color: white;  
+}
+
+#title{
+    background-color:#80DBD4;
+    color:white;
+    font-size:25px;
+    border:none;
+    margin-bottom:3px;
+    width:100%;   
+}
+
+input#title::-webkit-input-placeholder {
+   color: white;
+}
+
+input#title:-moz-placeholder { /* Firefox 18- */
+   color: white;  
+}
+
+input#title::-moz-placeholder {  /* Firefox 19+ */
+   color: white;  
+}
+
+input#title:-ms-input-placeholder {  
+   color: white;  
+}
+
+#scBox{
+    float:right;
+}
+
+
+#rambleForm{
+    margin-top:7px;
+}
+
+
+
+
+
+
+
