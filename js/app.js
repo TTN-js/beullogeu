@@ -46,32 +46,67 @@ function app() {
 
 // models
 
-var rootFbURL = "https://readandramble.firebaseio.com/"
-var fbRef = new Firebase(rootFbURL)
-
-var UserRambleCollection = Backbonefire.Firebase.Collection.extend({
-	url:"",
-	initialize: function(){
-		this.url = rootFbURL + "user/"
-		
+var RambleModel = Backbonefire.Model.extend ({
+	defaults: {
+		"title":"",
+		"content":""
 	}
 })
 
-// https://readandramble.firebaseio.com/user/98u34t9u8j349398/posts/
+var RamblesCollection = Backbonefire.Firebase.Collection.extend ({
+	url: "https://readandramble.firebaseio.com/users",
+	model: RambleModel,
+
+	initialize: function(uid){
+		this.url = `https://readandramble.firebaseio.com/users/${uid}/rambles`
+	}
+})
+
+// var AllRamblesCollection = Backbonefire.Firebase.Collection.extend ({
+// 	url: "https://readandramble.firebaseio.com/users",
+// 	model: RambleModel,
+
+// 	initialize: function() {
+// 		this.url = `https://readandramble.firebaseio.com/allrambles`
+// 	}
+// })
 
 // views
 var LogInView = React.createClass({
+	email: "",
+	password: "",
+
+	_getEmail: function(e){
+		e.preventDefault()
+		this.email = e.target.value
+	},
+
+	_getPassword: function(e){
+		e.preventDefault()
+		this.password = e.target.value
+	},
+
+	_handleLogIn: function(){
+		this.props.boundSignUserIn(this.email, this.password)
+	},
+
+	_handleSignUp: function(){
+		this.props.boundSignUserUp(this.email, this.password)
+	},
+
 	render: function(){
 		return(
 
 			<div>
 
-				<form onSubmit={this._handleLogIn}>
-				<input type="text" id="email" placeholder="Email"/>
-				<input type="password" id="password" placeholder="Password"/>
+				<form>
+				<input type="text" id="email" placeholder="Email" onChange={this._getEmail}/>
+				<input type="password" id="password" placeholder="Password" onChange={this._getPassword}/>
+
 				<h3 className="signup">read&ramble</h3><br/>
-				<input className="button-primary" type="submit" defaultValue="Log In"/>
-				<input className="button-primary" type="submit" defaultValue="Sign Up" onClick={this._SignUp}/><br/>
+
+				<input className="button-primary" type="submit" defaultValue="Log In" onClick={this._handleLogIn}/>
+				<input className="button-primary" type="submit" defaultValue="Sign Up" onClick={this._handleSignUp}/><br/>
 				</form>
 
 				<div className="ReadRamble">
@@ -82,99 +117,37 @@ var LogInView = React.createClass({
 
 			</div>
 		)
-	},
-
-	_SignUp: function(){
-		myAppRouter.navigate("authenticate", {trigger:true})
-	},
-
-		_handleLogIn:function(e){
-		e.preventDefault();
-
-		var emailInput = e.currentTarget.email.value
-		var pwInput = e.currentTarget.password.value
-		var authDataObj ={
-			email:emailInput,
-			password:pwInput
-		}
-
-			fbRef.authWithPassword(authDataObj, function(err, authData){
-				if(err){
-					alert("THE EMAIL ADDRESS OR PASSWORD YOU ENTERED IS NOT VALID")
-				}else{
-					console.log("user is good to go!")
-					myAppRouter.navigate("read",{trigger:true})
-				}
-			})
 	}
 
-})
-
-var AuthView = React.createClass({
-
-	_handleSignUp: function(e){
-		var emailInput = e.currentTarget.email.value
-		var pwInput = e.currentTarget.password.value
-		var usernameInput = e.currentTarget.username.value
-
-		console.log(emailInput, pwInput, usernameInput)
-
-		var newUser = {
-			email: emailInput,
-			password: pwInput
-		}
-
-		fbRef.createUser(newUser, function(err, authData){
-			if(authData){
-				var UserRambleColl = new UserRambleCollection()
-				UserRambleColl.create({
-					username: usernameInput,
-					uid: authData.uid
-			})
-			myAppRouter.navigate("read",{trigger:true})
-
-			}else{
-				alert("A USER HAS NOT BEEN CREATED")
-			}
-
-		})
-
-	},
-
-	render:function(){
-		return(
-			<div>
-
-				<form onSubmit={this._handleSignUp}>
-				<input type="text" id="email" placeholder="Email"/>
-				<input type="password" id="password" placeholder="Password"/>
-				<h3 className="signup">read&ramble</h3><br/>
-				<input type="text" id="username" placeholder="Username"/><br/>
-				<input id="RNRButton" className="button-primary" type="submit" defaultValue="read&ramble"/><br/>
-				</form>
-
-				<div className="ReadRamble">
-					<h3 className="wordHolder">sign up to read&ramble...</h3><br/>
-				</div>
-
-			</div>
-		)
-	}
 })
 
 var ReadView = React.createClass({
+
+	componentDidMount: function(){
+		console.log("did mount")
+		var self = this
+		this.props.userRambleColl.on("sync", function(){self.forceUpdate()})
+	},
+
+	_makeRambleComponent: function(mdl, i){
+		console.log("making rmbl component")
+		return<SingleRamble rambleData={mdl} key={i}/>
+	},
+
 	render:function(){
 		return(
 			<div>
 				<form>
-				<h3 className="signinas">{this.props.username}</h3>
+				<h3 className="signinas">{this.props.email}</h3>
 				<h3 className="signup">read&ramble</h3><br/><br/>
 
 				<input id="logoutButton" className="button-primary" type="submit" defaultValue="Log Out" onClick={this._LogOut}/>
 				</form>	
 
 				<div className="ReadRamble">
-					<h3 className="wordHolder"></h3><br/>
+
+					<div className="wordHolder"> {this.props.userRambleColl.map(this._makeRambleComponent)} </div> <br/>
+
 				</div>
 
 				<Tabs showing={this.props.showing}/>
@@ -188,28 +161,38 @@ var ReadView = React.createClass({
 	}
 })
 
+var SingleRamble = React.createClass({
+	render: function() {
+		return(
+			<div className="snglRamble">
+				<h4 className="rambleTitle">{this.props.rambleData.get("title")}</h4>
+				<p className="rambleContent">{this.props.rambleData.get("content")}</p>
+			</div>
+			)
+	}
+})
+
 var RambleView = React.createClass({
 	_cancelRamble: function(){
 		location.hash = "read"
 	},
 
-	_submitRamble: function(e){
-		var title = e.currentTarget.title.value
-		console.log('title: ....', title)
-		var writeRamble = e.currentTarget.writeRamble.value
-		console.log('writeRamble: ....', writeRamble)
+	_getRamble: function(e){
+		e.preventDefault()
+		var title = e.target.title.value
+		console.log('title: ....')
+		var content = e.target.content.value
+		console.log('writeRamble: ....')
 
-	var newRamble = {
-		title:title,
-		ramble:writeRamble
-	}
+		this.props.userRambleColl.add({
+			"title": title,
+			"content": content
+		})
 
-	var rambleCollection = new UserRambleCollection()
+		console.log("adding to user ramble coll")
+		console.log(this.props.userRambleColl)
 
-		rambleCollection.create({
-					title: newRamble.title,
-					ramble: newRamble.ramble
-					})
+		window.location.hash="read"
 
 	},
 
@@ -218,17 +201,20 @@ var RambleView = React.createClass({
 			<div>
 
 				<form>
-					<h3 className="signinas">{this.props.username}</h3>
+					<h3 className="signinas">{this.props.email}</h3>
 					<h3 className="signup">read&ramble</h3><br/><br/>
 
 					<input id="logoutButton" className="button-primary" type="submit" defaultValue="Log Out" onClick={this._LogOut}/>
 				</form>	
 
 				<div className="ReadRamble">
-					<form onSubmit={this._submitRamble} id = "rambleForm">
+					<form id = "rambleForm" onSubmit={this._getRamble}>
+
 						<input type="text" id="title" placeholder="Title"/>
-						<textarea type="text" id="writeRamble" placeholder="ramble..."/>
+						<textarea type="text" id="content" placeholder="ramble..."/>
+
 						<div id="scBox">
+
 							<input className="button-primary" type="submit" defaultValue="Submit"/>
 							<input className="button-primary" type="submit" defaultValue="Cancel" onClick={this._cancelRamble}/><br/>
 						</div>
@@ -286,36 +272,92 @@ var Tab = React.createClass({
 var AppRouter = Backbonefire.Router.extend({
 	routes: {
 		"login": "showLogIn",
-		"authenticate": "showAuth",
 		"read": "showRead",
 		"ramble": "showRamble",
+		// "readall": "showAllRamble"
 		"*default": "showLogIn"
 	},
 
-	showLogIn:function(){
-		DOM.render(<LogInView/>, document.querySelector(".container"))
+		initialize: function(){
+		console.log("app is routting...")
+
+		this.ref = new Firebase("https://readandramble.firebaseio.com/")
+		window.ref=this.ref
+
+
+		if (!this.ref.getAuth()) {
+			location.hash = "login"
+		}
+	
+		this.on("route", function(){
+			if (!this.ref.getAuth()) {
+				location.hash = "login"
+			}
+		})
+
 	},
 
-	showAuth: function(){
-		DOM.render(<AuthView/>, document.querySelector(".container"))
+	showLogIn:function(){
+		var boundSignUserIn = this._signUserIn.bind(this)
+		var boundSignUserUp = this._signUserUp.bind(this)
+		DOM.render(<LogInView boundSignUserIn={boundSignUserIn} boundSignUserUp={boundSignUserUp}/>, document.querySelector(".container"))
+		window.location.hash = "login"
+	},
+
+	_signUserIn: function(sbmttdEmail, sbmttdpassword) {
+		console.log(sbmttdEmail, sbmttdpassword)
+		this.ref.authWithPassword({
+			email:sbmttdEmail,
+			password:sbmttdpassword
+		}, function(error, authData){
+			if(error){
+				console.log(error)
+			}else{
+				location.hash = "ramble"
+			}
+		})
+	},
+
+	_signUserUp: function(sbmttdEmail, sbmttdpassword) {
+		var ref = this.ref 
+		var boundSignUserIn = this._signUserIn.bind(this)
+		var boundSignUserUp = this._signUserUp.bind(this)
+		var storeUser = function(userData){
+			ref.child("users").child(userData.uid).set({email:sbmttdEmail})
+		}
+		var handler = function(error, userData) {
+			if (error) {
+				console.log("A USER HAS NOT BEEN CREATED")
+				DOM.render(<LogInView error={error} boundSignUserIn={boundSignUserIn} boundSignUserUp={boundSignUserUp}/>, document.querySelector(".container"))
+			}else{
+				console.log("User has been created!")
+				storeUser(userData)
+				boundSignUserIn(sbmttdEmail, sbmttdpassword)
+			}
+		}
+		ref.createUser({
+			email: sbmttdEmail,
+			password: sbmttdpassword
+		}, handler)
 	},
 
 	showRead: function(){
-		DOM.render(<ReadView/>, document.querySelector(".container"))
+		var rc = new RamblesCollection(this.ref.getAuth().uid)
+		DOM.render(<ReadView email={this.ref.getAuth().password.email} userRambleColl={rc}/>, document.querySelector(".container"))
+		window.location.hash= "read"
 	},
 
 	showRamble: function(){
-		DOM.render(<RambleView/>, document.querySelector(".container"))
+		var rc = new RamblesCollection(this.ref.getAuth().uid)
+		DOM.render(<RambleView email={this.ref.getAuth().password.email} userRambleColl={rc}/>, document.querySelector(".container"))
+		window.location.hash = "ramble"
 	},
-
-	initialize: function(){
-		console.log("app is routting...")
-		Backbonefire.history.start()
-	}
 
 })
 
 var myAppRouter = new AppRouter()
+
+Backbonefire.history.start()
 
 }
 

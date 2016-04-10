@@ -230,7 +230,7 @@ form {
     color:white;
 }
 
-#writeRamble{
+#content{
     min-width:100%;
     max-width:100%;
     background-color:#80DBD4;
@@ -293,7 +293,16 @@ input#title:-ms-input-placeholder {
     margin-top:7px;
 }
 
+.snglRamble{
+    border: 3px solid #33C3F0;
+    width:100%;
+    padding:5px;
+    margin-top:5px;
+}
 
+.rambleTitle, .rambleContent{
+    margin-bottom:0px;
+}
 
 
 
